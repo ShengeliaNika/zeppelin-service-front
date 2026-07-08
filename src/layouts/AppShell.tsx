@@ -21,6 +21,8 @@ import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import PeopleOutlinedIcon from "@mui/icons-material/PeopleOutlined";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
+import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
+import InsightsOutlinedIcon from "@mui/icons-material/InsightsOutlined";
 import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
 import HistoryOutlinedIcon from "@mui/icons-material/HistoryOutlined";
@@ -83,6 +85,18 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
           <Inventory2OutlinedIcon />
         </ListItemIcon>
         <ListItemText primary="Inventory" />
+      </NL>
+      <NL to="/team" sx={navItemSx}>
+        <ListItemIcon>
+          <GroupsOutlinedIcon />
+        </ListItemIcon>
+        <ListItemText primary="Team" />
+      </NL>
+      <NL to="/analysis" sx={navItemSx}>
+        <ListItemIcon>
+          <InsightsOutlinedIcon />
+        </ListItemIcon>
+        <ListItemText primary="Analysis" />
       </NL>
 
       {isAdmin && (

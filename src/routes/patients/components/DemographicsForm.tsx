@@ -19,6 +19,7 @@ const emptyValues: PatientFormValues = {
   addressLine1: "",
   addressLine2: "",
   city: "",
+  identityNumber: "",
   emergencyContactName: "",
   emergencyContactPhone: "",
   insuranceProvider: "",
@@ -66,6 +67,14 @@ export default function DemographicsForm({ initialValues, submitLabel, submittin
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <TextField type="email" label="Email" value={form.email ?? ""} onChange={(e) => set("email", e.target.value)} fullWidth />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <TextField
+            label="Identity number"
+            value={form.identityNumber ?? ""}
+            onChange={(e) => set("identityNumber", e.target.value)}
+            fullWidth
+          />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <TextField

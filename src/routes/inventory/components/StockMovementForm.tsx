@@ -1,17 +1,24 @@
 import { useState, type FormEvent } from "react";
 import { Box, Button, MenuItem, TextField } from "@mui/material";
-import type { StockMovementType } from "../../../api/types";
+import type { ItemSupplierLink, StockMovementType } from "../../../api/types";
 import { useRecordStockMovement } from "../../../hooks/mutations/useInventoryMutations";
+import { useSuppliers } from "../../../hooks/queries/useSuppliers";
 
 const TYPES: StockMovementType[] = ["Restock", "UsageDeduction", "Waste", "Adjustment"];
 
-export default function StockMovementForm({ itemId }: { itemId: string }) {
+export default function StockMovementForm({ itemId, linkedSuppliers }: { itemId: string; linkedSuppliers: ItemSupplierLink[] }) {
   const recordMovement = useRecordStockMovement(itemId);
+  const { data: allSuppliers } = useSuppliers();
   const [type, setType] = useState<StockMovementType>("Restock");
   const [quantity, setQuantity] = useState("");
   const [lotNumber, setLotNumber] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
+  const [supplierId, setSupplierId] = useState("");
+  const [unitCost, setUnitCost] = useState("");
   const [notes, setNotes] = useState("");
+
+  const preferredLink = linkedSuppliers.find((l) => l.isPreferred) ?? linkedSuppliers[0];
+  const suppliersToOffer = allSuppliers ?? [];
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -20,11 +27,15 @@ export default function StockMovementForm({ itemId }: { itemId: string }) {
       quantity: Number(quantity),
       lotNumber: type === "Restock" && lotNumber ? lotNumber : undefined,
       expiryDate: type === "Restock" && expiryDate ? expiryDate : undefined,
+      supplierId: type === "Restock" && supplierId ? supplierId : undefined,
+      unitCost: type === "Restock" && unitCost ? Number(unitCost) : undefined,
       notes: notes || undefined,
     });
     setQuantity("");
     setLotNumber("");
     setExpiryDate("");
+    setSupplierId("");
+    setUnitCost("");
     setNotes("");
   }
 
@@ -57,6 +68,31 @@ export default function StockMovementForm({ itemId }: { itemId: string }) {
             value={expiryDate}
             onChange={(e) => setExpiryDate(e.target.value)}
             slotProps={{ inputLabel: { shrink: true } }}
+          />
+          <TextField
+            select
+            size="small"
+            label="Supplier (optional)"
+            value={supplierId}
+            onChange={(e) => setSupplierId(e.target.value)}
+            sx={{ minWidth: 160 }}
+          >
+            <MenuItem value="">— None —</MenuItem>
+            {suppliersToOffer.map((s) => (
+              <MenuItem key={s.id} value={s.id}>
+                {s.name}
+              </MenuItem>
+            ))}
+          </TextField>
+          <TextField
+            type="number"
+            size="small"
+            label="Unit cost (GEL, optional)"
+            slotProps={{ htmlInput: { min: 0, step: "0.01" } }}
+            value={unitCost}
+            onChange={(e) => setUnitCost(e.target.value)}
+            placeholder={preferredLink?.lastUnitCost != null ? preferredLink.lastUnitCost.toFixed(2) : undefined}
+            sx={{ width: 150 }}
           />
         </>
       )}

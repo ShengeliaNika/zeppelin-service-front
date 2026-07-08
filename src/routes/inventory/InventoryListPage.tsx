@@ -1,11 +1,12 @@
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import {
   Box,
   Button,
+  Chip,
   Link,
-  MenuItem,
   Paper,
+  Stack,
   Table,
   TableBody,
   TableCell,
@@ -17,105 +18,146 @@ import {
   Typography,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import { useInventoryItems, useInventoryAlerts } from "../../hooks/queries/useInventory";
+import { useInventoryItems, useInventoryAlerts, useInventorySummary, type InventoryQuickFilter } from "../../hooks/queries/useInventory";
 import { useCreateInventoryItem } from "../../hooks/mutations/useInventoryMutations";
 import { useAuth } from "../../auth/AuthContext";
 import { Roles } from "../../auth/roles";
-import type { InventoryCategory } from "../../api/types";
+import type { CreateInventoryItemRequest } from "../../api/types";
 import { QueryState } from "../../components/QueryState";
 import LowStockBanner from "./components/LowStockBanner";
 import ExpiringSoonBanner from "./components/ExpiringSoonBanner";
+import StockStatusChip from "./components/StockStatusChip";
+import ExpiryBadge from "./components/ExpiryBadge";
+import CategoryTabs from "./components/CategoryTabs";
+import ItemFormDialog from "./components/ItemFormDialog";
+import AdjustmentsPanel from "./components/AdjustmentsPanel";
+import type { InventoryCategory, InventoryItem } from "../../api/types";
+import { formatCurrency } from "../../utils/currency";
 
-const CATEGORIES: InventoryCategory[] = ["Consumable", "Anesthetic", "Ppe", "Instrument", "Other"];
+function nearestExpiry(item: InventoryItem): string | null {
+  const dates = item.batches.filter((b) => b.expiryDate != null).map((b) => b.expiryDate as string);
+  if (dates.length === 0) return null;
+  return dates.reduce((soonest, d) => (d < soonest ? d : soonest));
+}
+
 const PAGE_SIZE = 25;
+
+const QUICK_FILTERS: { value: InventoryQuickFilter; label: string }[] = [
+  { value: "", label: "Default View" },
+  { value: "nearExpiry", label: "Near Expiry" },
+  { value: "lowStock", label: "Low Stock" },
+  { value: "negativeMargin", label: "Negative Margin" },
+];
 
 export default function InventoryListPage() {
   const { user } = useAuth();
   const [page, setPage] = useState(0);
-  const { data, isLoading, error } = useInventoryItems(page * PAGE_SIZE, PAGE_SIZE);
+  const [category, setCategory] = useState<InventoryCategory | "">("");
+  const [search, setSearch] = useState("");
+  const [quickFilter, setQuickFilter] = useState<InventoryQuickFilter>("");
+  const { data, isLoading, error } = useInventoryItems(page * PAGE_SIZE, PAGE_SIZE, category, search, quickFilter);
   const { data: alerts } = useInventoryAlerts();
+  const { data: summary } = useInventorySummary();
   const createItem = useCreateInventoryItem();
 
   const [showNewItem, setShowNewItem] = useState(false);
-  const [name, setName] = useState("");
-  const [category, setCategory] = useState<InventoryCategory>("Consumable");
-  const [unit, setUnit] = useState("");
-  const [parLevel, setParLevel] = useState("");
 
-  async function handleCreate(e: FormEvent) {
-    e.preventDefault();
-    await createItem.mutateAsync({ name, category, unit, parLevel: Number(parLevel) });
-    setName("");
-    setUnit("");
-    setParLevel("");
+  function handleCategoryChange(value: InventoryCategory | "") {
+    setCategory(value);
+    setPage(0);
+  }
+
+  function handleSearchChange(value: string) {
+    setSearch(value);
+    setPage(0);
+  }
+
+  function handleQuickFilterChange(value: InventoryQuickFilter) {
+    setQuickFilter(value);
+    setPage(0);
+  }
+
+  async function handleCreate(values: CreateInventoryItemRequest) {
+    await createItem.mutateAsync(values);
     setShowNewItem(false);
   }
 
   return (
     <Box>
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.5, flexWrap: "wrap", gap: 1 }}>
         <Typography variant="h5" sx={{ fontWeight: 600 }}>
-          Inventory
+          Items
         </Typography>
-        {user?.roles.includes(Roles.Admin) && !showNewItem && (
+        {user?.roles.includes(Roles.Admin) && (
           <Button variant="contained" startIcon={<AddIcon />} onClick={() => setShowNewItem(true)}>
-            New Item
+            Create Product
           </Button>
         )}
       </Box>
 
+      {summary && (
+        <Typography color="text.secondary" sx={{ mb: 2 }}>
+          Total Valuation: <strong>{formatCurrency(summary.totalValuation)}</strong>
+        </Typography>
+      )}
+
       {alerts && <LowStockBanner items={alerts.lowStock} />}
       {alerts && <ExpiringSoonBanner batches={alerts.expiringSoon} />}
 
-      {showNewItem && (
-        <Box component="form" onSubmit={handleCreate} sx={{ display: "flex", gap: 1.5, flexWrap: "wrap", mb: 2 }}>
-          <TextField size="small" label="Name" value={name} onChange={(e) => setName(e.target.value)} required />
-          <TextField select size="small" label="Category" value={category} onChange={(e) => setCategory(e.target.value as InventoryCategory)} sx={{ minWidth: 140 }}>
-            {CATEGORIES.map((c) => (
-              <MenuItem key={c} value={c}>
-                {c}
-              </MenuItem>
-            ))}
-          </TextField>
-          <TextField size="small" label="Unit (e.g. box)" value={unit} onChange={(e) => setUnit(e.target.value)} required />
-          <TextField
-            type="number"
-            size="small"
-            label="Par level"
-            slotProps={{ htmlInput: { min: 0 } }}
-            value={parLevel}
-            onChange={(e) => setParLevel(e.target.value)}
-            required
+      <ItemFormDialog
+        open={showNewItem}
+        onClose={() => setShowNewItem(false)}
+        title="Create Product"
+        submitLabel="Create"
+        isSubmitting={createItem.isPending}
+        onSubmit={handleCreate}
+      />
+
+      <CategoryTabs value={category} onChange={handleCategoryChange} />
+
+      <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: "wrap" }}>
+        {QUICK_FILTERS.map((f) => (
+          <Chip
+            key={f.value}
+            label={f.label}
+            clickable
+            color={quickFilter === f.value ? "primary" : "default"}
+            variant={quickFilter === f.value ? "filled" : "outlined"}
+            onClick={() => handleQuickFilterChange(f.value)}
           />
-          <Button onClick={() => setShowNewItem(false)}>Cancel</Button>
-          <Button type="submit" variant="contained" disabled={createItem.isPending}>
-            {createItem.isPending ? "Creating…" : "Create"}
-          </Button>
-        </Box>
-      )}
+        ))}
+      </Stack>
+
+      <TextField
+        placeholder="Search by name or code…"
+        value={search}
+        onChange={(e) => handleSearchChange(e.target.value)}
+        size="small"
+        sx={{ mb: 2, width: 320 }}
+      />
 
       <QueryState isLoading={isLoading} error={error}>
-        {data && data.items.length === 0 && <Typography>No inventory items yet.</Typography>}
+        {data && data.items.length === 0 && <Typography>No inventory items match your filters.</Typography>}
         {data && data.items.length > 0 && (
           <Paper variant="outlined">
             <TableContainer>
               <Table>
                 <TableHead>
                   <TableRow>
+                    <TableCell>Code</TableCell>
                     <TableCell>Name</TableCell>
                     <TableCell>Category</TableCell>
-                    <TableCell>Stock</TableCell>
-                    <TableCell>Par Level</TableCell>
-                    <TableCell>Supplier</TableCell>
+                    <TableCell>Exp. Date</TableCell>
+                    <TableCell align="right">Margin</TableCell>
+                    <TableCell align="right">Average</TableCell>
+                    <TableCell align="right">In-Stock</TableCell>
+                    <TableCell>Status</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {data.items.map((item) => (
-                    <TableRow
-                      key={item.id}
-                      hover
-                      sx={item.currentStock <= item.parLevel ? { bgcolor: (t) => `${t.palette.error.main}14` } : undefined}
-                    >
+                    <TableRow key={item.id} hover>
+                      <TableCell>{item.sku ?? "—"}</TableCell>
                       <TableCell>
                         <Link component={RouterLink} to={`/inventory/${item.id}`}>
                           {item.name}
@@ -123,12 +165,18 @@ export default function InventoryListPage() {
                       </TableCell>
                       <TableCell>{item.category}</TableCell>
                       <TableCell>
+                        <ExpiryBadge expiryDate={nearestExpiry(item)} />
+                      </TableCell>
+                      <TableCell align="right" sx={item.margin != null && item.margin < 0 ? { color: "error.main" } : undefined}>
+                        {item.margin != null ? formatCurrency(item.margin) : "—"}
+                      </TableCell>
+                      <TableCell align="right">{item.averageCost != null ? formatCurrency(item.averageCost) : "—"}</TableCell>
+                      <TableCell align="right" sx={item.currentStock <= item.parLevel ? { color: "error.main", fontWeight: 600 } : undefined}>
                         {item.currentStock} {item.unit}
                       </TableCell>
                       <TableCell>
-                        {item.parLevel} {item.unit}
+                        <StockStatusChip currentStock={item.currentStock} parLevel={item.parLevel} />
                       </TableCell>
-                      <TableCell>{item.supplierName ?? "—"}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -145,6 +193,8 @@ export default function InventoryListPage() {
           </Paper>
         )}
       </QueryState>
+
+      <AdjustmentsPanel />
     </Box>
   );
 }

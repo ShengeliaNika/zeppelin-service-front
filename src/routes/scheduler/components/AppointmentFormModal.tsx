@@ -54,11 +54,12 @@ function addMinutes(time: string, minutesToAdd: number) {
 interface Props {
   initialStart: Date;
   initialEnd: Date;
+  initialPatient?: PatientSummary;
   onSave: () => void;
   onCancel: () => void;
 }
 
-export default function AppointmentFormModal({ initialStart, initialEnd, onSave, onCancel }: Props) {
+export default function AppointmentFormModal({ initialStart, initialEnd, initialPatient, onSave, onCancel }: Props) {
   const [patientSearch, setPatientSearch] = useState("");
   const { data: patients } = usePatients(patientSearch);
   const { data: appointmentTypes } = useAppointmentTypes();
@@ -66,7 +67,7 @@ export default function AppointmentFormModal({ initialStart, initialEnd, onSave,
   const { data: staff } = useStaffDirectory();
   const createAppointment = useCreateAppointment();
 
-  const [selectedPatient, setSelectedPatient] = useState<PatientSummary | null>(null);
+  const [selectedPatient, setSelectedPatient] = useState<PatientSummary | null>(initialPatient ?? null);
   const [dentistUserId, setDentistUserId] = useState("");
   const [chairId, setChairId] = useState("");
   const [appointmentTypeId, setAppointmentTypeId] = useState("");
@@ -118,6 +119,7 @@ export default function AppointmentFormModal({ initialStart, initialEnd, onSave,
             options={patients?.items ?? []}
             getOptionLabel={(p) => `${p.firstName} ${p.lastName}`}
             value={selectedPatient}
+            disabled={!!initialPatient}
             onChange={(_: SyntheticEvent, value: PatientSummary | null) => setSelectedPatient(value)}
             onInputChange={(_: SyntheticEvent, value: string) => setPatientSearch(value)}
             renderInput={(params) => <TextField {...params} label="Patient" required />}

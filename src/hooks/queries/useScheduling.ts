@@ -29,3 +29,10 @@ export function useAppointments(fromIso: string, toIso: string) {
     queryFn: () => apiFetch<Appointment[]>(`/api/appointments?from=${fromIso}&to=${toIso}`),
   });
 }
+
+export function usePatientAppointments(patientId: string) {
+  return useQuery({
+    queryKey: ["appointments", "by-patient", patientId],
+    queryFn: () => apiFetch<Appointment[]>(`/api/appointments?patientId=${patientId}`),
+  });
+}

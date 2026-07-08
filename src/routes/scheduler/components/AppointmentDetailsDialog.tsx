@@ -14,6 +14,7 @@ import type { Appointment, AppointmentStatus } from "../../../api/types";
 import { useUpdateAppointmentStatus } from "../../../hooks/mutations/useAppointmentMutations";
 import { StatusChip } from "../../../components/StatusChip";
 import VisitNotesPanel from "./VisitNotesPanel";
+import SuppliesUsedPanel from "./SuppliesUsedPanel";
 
 function formatTime(iso: string) {
   return new Date(iso).toLocaleTimeString([], { hour: "numeric", minute: "2-digit", timeZone: "UTC" });
@@ -37,6 +38,7 @@ interface Props {
 export default function AppointmentDetailsDialog({ appointment, onClose }: Props) {
   const updateStatus = useUpdateAppointmentStatus();
   const [showNotes, setShowNotes] = useState(false);
+  const [showSupplies, setShowSupplies] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
 
@@ -56,7 +58,7 @@ export default function AppointmentDetailsDialog({ appointment, onClose }: Props
   }
 
   return (
-    <Dialog open onClose={onClose} maxWidth="xs" fullWidth>
+    <Dialog open onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>{appointment.patientName}</DialogTitle>
       <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
         <Typography color="text.secondary">
@@ -93,6 +95,9 @@ export default function AppointmentDetailsDialog({ appointment, onClose }: Props
             <Button size="small" onClick={() => setShowNotes((v) => !v)}>
               {showNotes ? "Hide Notes" : "Visit Notes"}
             </Button>
+            <Button size="small" onClick={() => setShowSupplies((v) => !v)}>
+              {showSupplies ? "Hide Supplies Used" : "Supplies Used"}
+            </Button>
             {appointment.status !== "Completed" && appointment.status !== "Cancelled" && (
               <Button size="small" color="error" onClick={() => setCancelling(true)} disabled={updateStatus.isPending}>
                 Cancel Appointment
@@ -105,6 +110,13 @@ export default function AppointmentDetailsDialog({ appointment, onClose }: Props
           <>
             <Divider />
             <VisitNotesPanel appointmentId={appointment.id} />
+          </>
+        )}
+
+        {showSupplies && !cancelling && (
+          <>
+            <Divider />
+            <SuppliesUsedPanel appointmentId={appointment.id} appointmentTypeId={appointment.appointmentTypeId} />
           </>
         )}
       </DialogContent>

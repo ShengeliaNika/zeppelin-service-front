@@ -50,23 +50,30 @@ export interface MedicalHistoryEntry {
   notedAtUtc: string;
 }
 
+export type PatientSearchBy = "name" | "phone" | "mrn" | "identity" | "email";
+export type PatientStatusFilter = "all" | "initial" | "archived";
+
 export interface PatientSummary {
   id: string;
+  patientNumber: number;
   firstName: string;
   lastName: string;
   dateOfBirth: string;
   phone: string | null;
+  email: string | null;
   isActive: boolean;
 }
 
 export interface Patient {
   id: string;
+  patientNumber: number;
   firstName: string;
   lastName: string;
   dateOfBirth: string;
   sex: string | null;
   phone: string | null;
   email: string | null;
+  identityNumber: string | null;
   addressLine1: string | null;
   addressLine2: string | null;
   city: string | null;
@@ -86,6 +93,7 @@ export interface PatientFormValues {
   sex?: string;
   phone?: string;
   email?: string;
+  identityNumber?: string;
   addressLine1?: string;
   addressLine2?: string;
   city?: string;
@@ -94,6 +102,12 @@ export interface PatientFormValues {
   insuranceProvider?: string;
   insurancePolicyNumber?: string;
   insuranceGroupNumber?: string;
+}
+
+export interface PatientStatusCounts {
+  all: number;
+  initial: number;
+  archived: number;
 }
 
 export interface CreateMedicalHistoryEntryRequest {
@@ -267,26 +281,68 @@ export interface InventoryBatch {
   quantityRemaining: number;
 }
 
+export interface ItemSupplierLink {
+  id: string;
+  supplierId: string;
+  supplierName: string;
+  lastUnitCost: number | null;
+  supplierSku: string | null;
+  isPreferred: boolean;
+}
+
+export type InventorySaleType = "ForDoctor" | "ForPatient";
+
 export interface InventoryItem {
   id: string;
   name: string;
   category: InventoryCategory;
   unit: string;
-  supplierName: string | null;
-  supplierContact: string | null;
+  sku: string | null;
+  notes: string | null;
   currentStock: number;
   parLevel: number;
+  reorderQuantity: number | null;
   isActive: boolean;
+  isForSale: boolean;
+  purchaseFee: number | null;
+  saleFee: number | null;
+  saleType: InventorySaleType | null;
+  package: string | null;
+  dimensions: string | null;
+  weight: number | null;
+  averageCost: number | null;
+  margin: number | null;
+  valuation: number;
   batches: InventoryBatch[];
+  suppliers: ItemSupplierLink[];
 }
 
 export interface CreateInventoryItemRequest {
   name: string;
   category: InventoryCategory;
   unit: string;
-  supplierName?: string;
-  supplierContact?: string;
+  sku?: string;
+  notes?: string;
   parLevel: number;
+  reorderQuantity?: number;
+  isForSale: boolean;
+  purchaseFee?: number;
+  saleFee?: number;
+  saleType?: InventorySaleType;
+  package?: string;
+  dimensions?: string;
+  weight?: number;
+}
+
+export interface InventorySummary {
+  totalValuation: number;
+  lowStockCount: number;
+  expiringSoonCount: number;
+  negativeMarginCount: number;
+}
+
+export interface UpdateInventoryItemRequest extends CreateInventoryItemRequest {
+  isActive: boolean;
 }
 
 export type StockMovementType = "Restock" | "UsageDeduction" | "Waste" | "Adjustment";
@@ -297,6 +353,9 @@ export interface StockMovement {
   quantity: number;
   inventoryBatchId: string | null;
   appointmentTypeId: string | null;
+  supplierId: string | null;
+  supplierName: string | null;
+  unitCost: number | null;
   notes: string | null;
   recordedByName: string;
   recordedAtUtc: string;
@@ -309,7 +368,20 @@ export interface CreateStockMovementRequest {
   expiryDate?: string;
   appointmentTypeId?: string;
   appointmentId?: string;
+  supplierId?: string;
+  unitCost?: number;
   notes?: string;
+}
+
+export interface AppointmentSupplyUsage {
+  id: string;
+  inventoryItemId: string;
+  inventoryItemName: string;
+  unit: string;
+  type: StockMovementType;
+  quantity: number;
+  recordedByName: string;
+  recordedAtUtc: string;
 }
 
 export interface ExpiringBatch {
@@ -321,9 +393,55 @@ export interface ExpiringBatch {
   quantityRemaining: number;
 }
 
+export interface AdjustmentLogEntry {
+  id: string;
+  inventoryItemId: string;
+  inventoryItemName: string;
+  unit: string;
+  newQuantity: number;
+  notes: string | null;
+  recordedByName: string;
+  recordedAtUtc: string;
+}
+
 export interface InventoryAlerts {
   lowStock: InventoryItem[];
   expiringSoon: ExpiringBatch[];
+}
+
+export interface SupplierItemLink {
+  id: string;
+  inventoryItemId: string;
+  inventoryItemName: string;
+  lastUnitCost: number | null;
+  supplierSku: string | null;
+  isPreferred: boolean;
+}
+
+export interface Supplier {
+  id: string;
+  name: string;
+  contactName: string | null;
+  phone: string | null;
+  email: string | null;
+  notes: string | null;
+  isActive: boolean;
+  linkedItems: SupplierItemLink[];
+}
+
+export interface CreateSupplierRequest {
+  name: string;
+  contactName?: string;
+  phone?: string;
+  email?: string;
+  notes?: string;
+}
+
+export interface LinkItemSupplierRequest {
+  supplierId: string;
+  lastUnitCost?: number;
+  supplierSku?: string;
+  isPreferred: boolean;
 }
 
 export interface DashboardSummary {
@@ -333,6 +451,11 @@ export interface DashboardSummary {
   lowStockCount: number;
   expiringSoonCount: number;
   recallDueCount: number;
+  estimatedRevenueThisMonth: number;
+  inventoryValuation: number;
+  completedLast7DaysCount: number;
+  noShowLast7DaysCount: number;
+  cancelledLast7DaysCount: number;
 }
 
 export interface RecallReminder {
@@ -359,4 +482,122 @@ export interface AuditLogEntry {
   action: AuditAction;
   changedFieldsJson: string | null;
   timestampUtc: string;
+}
+
+export type TeamTaskStatus = "Open" | "InProgress" | "Done" | "Cancelled";
+
+export interface TeamTask {
+  id: string;
+  title: string;
+  description: string | null;
+  assignedToUserId: string;
+  assignedToName: string;
+  assignedByUserId: string;
+  assignedByName: string;
+  status: TeamTaskStatus;
+  dueDate: string | null;
+  createdAtUtc: string;
+  completedAtUtc: string | null;
+}
+
+export interface CreateTeamTaskRequest {
+  title: string;
+  description?: string;
+  assignedToUserId: string;
+  dueDate?: string;
+}
+
+export interface DailyAppointmentStats {
+  date: string;
+  scheduled: number;
+  completed: number;
+  noShow: number;
+  cancelled: number;
+}
+
+export interface AppointmentsTrend {
+  from: string;
+  to: string;
+  daily: DailyAppointmentStats[];
+  completionRate: number;
+  noShowRate: number;
+}
+
+export interface WeeklyPatientGrowth {
+  weekStart: string;
+  newPatients: number;
+}
+
+export interface PatientGrowth {
+  from: string;
+  to: string;
+  totalNewPatients: number;
+  weekly: WeeklyPatientGrowth[];
+}
+
+export interface MonthlyRevenue {
+  year: number;
+  month: number;
+  estimatedRevenue: number;
+}
+
+export interface RevenueTrend {
+  monthly: MonthlyRevenue[];
+}
+
+export type PurchaseListReason = "LowStock" | "ExpiringSoon" | "Both";
+
+export interface PurchaseListLine {
+  inventoryItemId: string;
+  inventoryItemName: string;
+  category: InventoryCategory;
+  unit: string;
+  currentStock: number;
+  parLevel: number;
+  suggestedQuantity: number;
+  reason: PurchaseListReason;
+}
+
+export interface PurchaseListSupplierGroup {
+  supplierId: string | null;
+  supplierName: string;
+  lines: PurchaseListLine[];
+}
+
+export interface CategoryUsage {
+  category: InventoryCategory;
+  usageQuantity: number;
+  wasteQuantity: number;
+  estimatedCost: number;
+}
+
+export interface ItemUsage {
+  inventoryItemId: string;
+  inventoryItemName: string;
+  usageQuantity: number;
+  estimatedCost: number;
+}
+
+export interface WasteStat {
+  inventoryItemId: string;
+  inventoryItemName: string;
+  wasteQuantity: number;
+  wastePercentage: number;
+}
+
+export interface MonthlyCostPoint {
+  year: number;
+  month: number;
+  estimatedCost: number;
+}
+
+export interface UsageCostReport {
+  from: string;
+  to: string;
+  totalUsageCost: number;
+  totalWasteCost: number;
+  categoryUsage: CategoryUsage[];
+  topUsedItems: ItemUsage[];
+  wasteStats: WasteStat[];
+  costOverTime: MonthlyCostPoint[];
 }

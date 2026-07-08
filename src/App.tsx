@@ -13,6 +13,8 @@ import PatientDetailPage from "./routes/patients/PatientDetailPage";
 import SchedulerPage from "./routes/scheduler/SchedulerPage";
 import InventoryListPage from "./routes/inventory/InventoryListPage";
 import InventoryItemDetailPage from "./routes/inventory/InventoryItemDetailPage";
+import TeamTasksPage from "./routes/team/TeamTasksPage";
+import AnalysisPage from "./routes/analysis/AnalysisPage";
 import AuditLogPage from "./routes/admin/AuditLogPage";
 
 export default function App() {
@@ -30,6 +32,8 @@ export default function App() {
               <Route path="/patients/:id" element={<PatientDetailPage />} />
               <Route path="/inventory" element={<InventoryListPage />} />
               <Route path="/inventory/:id" element={<InventoryItemDetailPage />} />
+              <Route path="/team" element={<TeamTasksPage />} />
+              <Route path="/analysis" element={<AnalysisPage />} />
               <Route element={<RequireRole roles={[Roles.Admin]} />}>
                 <Route path="/admin/users" element={<UsersPage />} />
                 <Route path="/admin/audit-log" element={<AuditLogPage />} />

@@ -10,6 +10,8 @@ const COLORS: Record<string, "success" | "error" | "warning" | "default" | "info
   Completed: "success",
   NoShow: "error",
   Cancelled: "error",
+  // TeamTaskStatus
+  Open: "default",
   // TreatmentPlanItemStatus / TreatmentPlanStatus
   Planned: "default",
   Draft: "default",

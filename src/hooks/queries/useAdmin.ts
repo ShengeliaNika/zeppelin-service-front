@@ -1,11 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "../../api/client";
-import type { AuditLogEntry, CombinedAlerts, DashboardSummary, PagedResult } from "../../api/types";
+import type { Appointment, AuditLogEntry, CombinedAlerts, DashboardSummary, PagedResult } from "../../api/types";
 
 export function useDashboardSummary() {
   return useQuery({
     queryKey: ["dashboard-summary"],
     queryFn: () => apiFetch<DashboardSummary>("/api/dashboard"),
+  });
+}
+
+export function useTodaysSchedule() {
+  return useQuery({
+    queryKey: ["dashboard-todays-schedule"],
+    queryFn: () => apiFetch<Appointment[]>("/api/dashboard/todays-schedule"),
   });
 }
 

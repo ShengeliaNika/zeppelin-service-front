@@ -30,3 +30,10 @@ export function useVisitNotes(appointmentId: string | null) {
     enabled: !!appointmentId,
   });
 }
+
+export function usePatientVisitNotes(patientId: string) {
+  return useQuery({
+    queryKey: ["visit-notes", "by-patient", patientId],
+    queryFn: () => apiFetch<VisitNote[]>(`/api/patients/${patientId}/visit-notes`),
+  });
+}
