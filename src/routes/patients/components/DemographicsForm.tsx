@@ -42,13 +42,13 @@ export default function DemographicsForm({ initialValues, submitLabel, submittin
   return (
     <Box component="form" onSubmit={handleSubmit}>
       <Grid container spacing={2} sx={{ mb: 2 }}>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+        <Grid item xs={12} sm={6} md={4}>
           <TextField label="First name" value={form.firstName} onChange={(e) => set("firstName", e.target.value)} required fullWidth />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+        <Grid item xs={12} sm={6} md={4}>
           <TextField label="Last name" value={form.lastName} onChange={(e) => set("lastName", e.target.value)} required fullWidth />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+        <Grid item xs={12} sm={6} md={4}>
           <TextField
             type="date"
             label="Date of birth"
@@ -59,16 +59,16 @@ export default function DemographicsForm({ initialValues, submitLabel, submittin
             slotProps={{ inputLabel: { shrink: true } }}
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+        <Grid item xs={12} sm={6} md={4}>
           <TextField label="Sex" value={form.sex ?? ""} onChange={(e) => set("sex", e.target.value)} fullWidth />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+        <Grid item xs={12} sm={6} md={4}>
           <TextField label="Phone" value={form.phone ?? ""} onChange={(e) => set("phone", e.target.value)} fullWidth />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+        <Grid item xs={12} sm={6} md={4}>
           <TextField type="email" label="Email" value={form.email ?? ""} onChange={(e) => set("email", e.target.value)} fullWidth />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+        <Grid item xs={12} sm={6} md={4}>
           <TextField
             label="Identity number"
             value={form.identityNumber ?? ""}
@@ -76,7 +76,7 @@ export default function DemographicsForm({ initialValues, submitLabel, submittin
             fullWidth
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+        <Grid item xs={12} sm={6} md={4}>
           <TextField
             label="Address line 1"
             value={form.addressLine1 ?? ""}
@@ -84,7 +84,7 @@ export default function DemographicsForm({ initialValues, submitLabel, submittin
             fullWidth
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+        <Grid item xs={12} sm={6} md={4}>
           <TextField
             label="Address line 2"
             value={form.addressLine2 ?? ""}
@@ -92,10 +92,10 @@ export default function DemographicsForm({ initialValues, submitLabel, submittin
             fullWidth
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+        <Grid item xs={12} sm={6} md={4}>
           <TextField label="City" value={form.city ?? ""} onChange={(e) => set("city", e.target.value)} fullWidth />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+        <Grid item xs={12} sm={6} md={4}>
           <TextField
             label="Emergency contact name"
             value={form.emergencyContactName ?? ""}
@@ -103,7 +103,7 @@ export default function DemographicsForm({ initialValues, submitLabel, submittin
             fullWidth
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+        <Grid item xs={12} sm={6} md={4}>
           <TextField
             label="Emergency contact phone"
             value={form.emergencyContactPhone ?? ""}
@@ -111,7 +111,7 @@ export default function DemographicsForm({ initialValues, submitLabel, submittin
             fullWidth
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+        <Grid item xs={12} sm={6} md={4}>
           <TextField
             label="Insurance provider"
             value={form.insuranceProvider ?? ""}
@@ -119,7 +119,7 @@ export default function DemographicsForm({ initialValues, submitLabel, submittin
             fullWidth
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+        <Grid item xs={12} sm={6} md={4}>
           <TextField
             label="Insurance policy #"
             value={form.insurancePolicyNumber ?? ""}
@@ -127,7 +127,7 @@ export default function DemographicsForm({ initialValues, submitLabel, submittin
             fullWidth
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+        <Grid item xs={12} sm={6} md={4}>
           <TextField
             label="Insurance group #"
             value={form.insuranceGroupNumber ?? ""}

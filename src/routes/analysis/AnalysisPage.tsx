@@ -60,10 +60,10 @@ export default function AnalysisPage() {
         {appointmentsTrend && (
           <>
             <Grid container spacing={2} sx={{ mb: 2 }}>
-              <Grid size={{ xs: 6, sm: 3 }}>
+              <Grid item xs={6} sm={3}>
                 <StatTile label="Completion rate" value={`${appointmentsTrend.completionRate}%`} />
               </Grid>
-              <Grid size={{ xs: 6, sm: 3 }}>
+              <Grid item xs={6} sm={3}>
                 <StatTile
                   label="No-show rate"
                   value={`${appointmentsTrend.noShowRate}%`}
@@ -94,7 +94,7 @@ export default function AnalysisPage() {
       {patientGrowth && (
         <>
           <Grid container spacing={2} sx={{ mb: 2 }}>
-            <Grid size={{ xs: 6, sm: 3 }}>
+            <Grid item xs={6} sm={3}>
               <StatTile label="New patients in range" value={patientGrowth.totalNewPatients} />
             </Grid>
           </Grid>
@@ -142,10 +142,10 @@ export default function AnalysisPage() {
       {usageCost && usageCost.categoryUsage.length > 0 && (
         <>
           <Grid container spacing={2} sx={{ mb: 2 }}>
-            <Grid size={{ xs: 6, sm: 3 }}>
+            <Grid item xs={6} sm={3}>
               <StatTile label="Usage cost" value={formatCurrency(usageCost.totalUsageCost)} />
             </Grid>
-            <Grid size={{ xs: 6, sm: 3 }}>
+            <Grid item xs={6} sm={3}>
               <StatTile label="Waste cost" value={formatCurrency(usageCost.totalWasteCost)} status={usageCost.totalWasteCost > 0 ? "warning" : "success"} />
             </Grid>
           </Grid>

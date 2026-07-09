@@ -8,7 +8,6 @@ import AppShell from "./layouts/AppShell";
 import DashboardPage from "./routes/DashboardPage";
 import UsersPage from "./routes/admin/UsersPage";
 import PatientsListPage from "./routes/patients/PatientsListPage";
-import NewPatientPage from "./routes/patients/NewPatientPage";
 import PatientDetailPage from "./routes/patients/PatientDetailPage";
 import SchedulerPage from "./routes/scheduler/SchedulerPage";
 import InventoryListPage from "./routes/inventory/InventoryListPage";
@@ -28,7 +27,6 @@ export default function App() {
               <Route path="/" element={<DashboardPage />} />
               <Route path="/scheduler" element={<SchedulerPage />} />
               <Route path="/patients" element={<PatientsListPage />} />
-              <Route path="/patients/new" element={<NewPatientPage />} />
               <Route path="/patients/:id" element={<PatientDetailPage />} />
               <Route path="/inventory" element={<InventoryListPage />} />
               <Route path="/inventory/:id" element={<InventoryItemDetailPage />} />

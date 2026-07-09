@@ -29,40 +29,40 @@ export default function DashboardPage() {
       <QueryState isLoading={isLoading} error={error}>
         {summary && (
           <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid size={{ xs: 6, sm: 4, md: 2 }}>
+            <Grid item xs={6} sm={4} md={2}>
               <StatTile label="Today's appointments" value={summary.todaysAppointmentsCount} />
             </Grid>
-            <Grid size={{ xs: 6, sm: 4, md: 2 }}>
+            <Grid item xs={6} sm={4} md={2}>
               <StatTile label="This week" value={summary.appointmentsThisWeekCount} />
             </Grid>
-            <Grid size={{ xs: 6, sm: 4, md: 2 }}>
+            <Grid item xs={6} sm={4} md={2}>
               <StatTile label="Active patients" value={summary.activePatientsCount} />
             </Grid>
-            <Grid size={{ xs: 6, sm: 4, md: 2 }}>
+            <Grid item xs={6} sm={4} md={2}>
               <StatTile
                 label="Low stock items"
                 value={summary.lowStockCount}
                 status={summary.lowStockCount > 0 ? "error" : "success"}
               />
             </Grid>
-            <Grid size={{ xs: 6, sm: 4, md: 2 }}>
+            <Grid item xs={6} sm={4} md={2}>
               <StatTile
                 label="Expiring soon"
                 value={summary.expiringSoonCount}
                 status={summary.expiringSoonCount > 0 ? "warning" : "success"}
               />
             </Grid>
-            <Grid size={{ xs: 6, sm: 4, md: 2 }}>
+            <Grid item xs={6} sm={4} md={2}>
               <StatTile
                 label="Recalls due"
                 value={summary.recallDueCount}
                 status={summary.recallDueCount > 0 ? "warning" : "success"}
               />
             </Grid>
-            <Grid size={{ xs: 6, sm: 4, md: 2 }}>
+            <Grid item xs={6} sm={4} md={2}>
               <StatTile label="Est. revenue this month" value={formatCurrency(summary.estimatedRevenueThisMonth)} />
             </Grid>
-            <Grid size={{ xs: 6, sm: 4, md: 2 }}>
+            <Grid item xs={6} sm={4} md={2}>
               <StatTile label="Inventory valuation" value={formatCurrency(summary.inventoryValuation)} />
             </Grid>
           </Grid>
@@ -70,7 +70,7 @@ export default function DashboardPage() {
       </QueryState>
 
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid size={{ xs: 12, md: 7 }}>
+        <Grid item xs={12} md={7}>
           <Card>
             <CardContent>
               <Typography variant="h6" sx={{ mb: 1.5 }}>
@@ -116,7 +116,7 @@ export default function DashboardPage() {
           </Card>
         </Grid>
 
-        <Grid size={{ xs: 12, md: 5 }}>
+        <Grid item xs={12} md={5}>
           <Card>
             <CardContent>
               <Typography variant="h6" sx={{ mb: 1.5 }}>

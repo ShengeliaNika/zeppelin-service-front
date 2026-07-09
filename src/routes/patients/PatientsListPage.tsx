@@ -1,9 +1,13 @@
 import { useState } from "react";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import {
+  Alert,
   Box,
   Button,
   Chip,
+  Dialog,
+  DialogContent,
+  DialogTitle,
   Link,
   Paper,
   Stack,
@@ -19,10 +23,12 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { usePatients, usePatientStatusCounts } from "../../hooks/queries/usePatients";
+import { useCreatePatient } from "../../hooks/mutations/usePatientMutations";
 import { QueryState } from "../../components/QueryState";
 import { UserAvatar } from "../../components/UserAvatar";
 import { calculateAge } from "../../utils/age";
-import type { PatientSearchBy, PatientStatusFilter } from "../../api/types";
+import DemographicsForm from "./components/DemographicsForm";
+import type { PatientFormValues, PatientSearchBy, PatientStatusFilter } from "../../api/types";
 
 const PAGE_SIZE = 25;
 
@@ -41,12 +47,21 @@ const STATUS_TABS: { value: PatientStatusFilter; label: string }[] = [
 ];
 
 export default function PatientsListPage() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [searchBy, setSearchBy] = useState<PatientSearchBy>("name");
   const [status, setStatus] = useState<PatientStatusFilter>("all");
   const [page, setPage] = useState(0);
   const { data, isLoading, error } = usePatients(search, page * PAGE_SIZE, PAGE_SIZE, searchBy, status);
   const { data: counts } = usePatientStatusCounts();
+  const createPatient = useCreatePatient();
+  const [showNewPatient, setShowNewPatient] = useState(false);
+
+  async function handleCreate(values: PatientFormValues) {
+    const patient = await createPatient.mutateAsync(values);
+    setShowNewPatient(false);
+    navigate(`/patients/${patient.id}`);
+  }
 
   function handleSearchChange(value: string) {
     setSearch(value);
@@ -72,10 +87,22 @@ export default function PatientsListPage() {
         <Typography variant="h5" sx={{ fontWeight: 600 }}>
           Patients
         </Typography>
-        <Button component={RouterLink} to="/patients/new" variant="contained" startIcon={<AddIcon />}>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={() => setShowNewPatient(true)}>
           Create Patient
         </Button>
       </Box>
+
+      <Dialog open={showNewPatient} onClose={() => setShowNewPatient(false)} maxWidth="md" fullWidth>
+        <DialogTitle>New Patient</DialogTitle>
+        <DialogContent>
+          <DemographicsForm submitLabel="Create Patient" submitting={createPatient.isPending} onSubmit={handleCreate} />
+          {createPatient.isError && (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              Failed to create patient.
+            </Alert>
+          )}
+        </DialogContent>
+      </Dialog>
       {data && counts && (
         <Typography color="text.secondary" sx={{ mb: 2 }}>
           {data.totalCount} / {counts.all}
