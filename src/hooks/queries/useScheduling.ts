@@ -36,3 +36,11 @@ export function usePatientAppointments(patientId: string) {
     queryFn: () => apiFetch<Appointment[]>(`/api/appointments?patientId=${patientId}`),
   });
 }
+
+export function useMyCompletedAppointments(dentistUserId: string | undefined) {
+  return useQuery({
+    queryKey: ["appointments", "completed", dentistUserId],
+    queryFn: () => apiFetch<Appointment[]>(`/api/appointments?dentistUserId=${dentistUserId}&status=Completed`),
+    enabled: !!dentistUserId,
+  });
+}

@@ -47,35 +47,37 @@ export default function Odontogram({ patientId }: { patientId: string }) {
 
   function renderRow(teeth: number[]) {
     return (
-      <Box sx={{ display: "flex", gap: 0.5, mb: 0.75 }}>
-        {teeth.map((n) => {
-          const record = recordByTooth.get(n);
-          const color = STATUS_COLOR[record?.status ?? "Healthy"];
-          return (
-            <Box
-              key={n}
-              component="button"
-              type="button"
-              onClick={() => selectTooth(n)}
-              title={record ? `${n}: ${record.status}` : `${n}: Healthy`}
-              sx={{
-                width: 32,
-                height: 32,
-                borderRadius: 1,
-                border: "1px solid",
-                borderColor: "divider",
-                bgcolor: color,
-                color: ["Decayed", "Crowned", "RootCanal", "Implant"].includes(record?.status ?? "") ? "white" : "text.primary",
-                fontSize: "0.7rem",
-                cursor: "pointer",
-                outline: selectedTooth === n ? "2px solid" : "none",
-                outlineColor: "primary.main",
-              }}
-            >
-              {n}
-            </Box>
-          );
-        })}
+      <Box sx={{ overflowX: "auto", pb: 0.5 }}>
+        <Box sx={{ display: "flex", gap: 0.5, mb: 0.75, width: "fit-content" }}>
+          {teeth.map((n) => {
+            const record = recordByTooth.get(n);
+            const color = STATUS_COLOR[record?.status ?? "Healthy"];
+            return (
+              <Box
+                key={n}
+                component="button"
+                type="button"
+                onClick={() => selectTooth(n)}
+                title={record ? `${n}: ${record.status}` : `${n}: Healthy`}
+                sx={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 1,
+                  border: "1px solid",
+                  borderColor: "divider",
+                  bgcolor: color,
+                  color: ["Decayed", "Crowned", "RootCanal", "Implant"].includes(record?.status ?? "") ? "white" : "text.primary",
+                  fontSize: "0.7rem",
+                  cursor: "pointer",
+                  outline: selectedTooth === n ? "2px solid" : "none",
+                  outlineColor: "primary.main",
+                }}
+              >
+                {n}
+              </Box>
+            );
+          })}
+        </Box>
       </Box>
     );
   }

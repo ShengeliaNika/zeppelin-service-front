@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from "react";
-import { Navigate, useLocation, useNavigate } from "react-router-dom";
-import { Alert, Box, Button, Paper, TextField, Typography } from "@mui/material";
+import { Link as RouterLink, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Alert, Box, Button, Link, Paper, TextField, Typography } from "@mui/material";
 import { useAuth } from "./AuthContext";
+import { ApiError } from "../api/client";
 
 export default function LoginPage() {
   const { user, login } = useAuth();
@@ -24,8 +25,8 @@ export default function LoginPage() {
     try {
       await login(email, password);
       navigate("/", { replace: true });
-    } catch {
-      setError("Invalid email or password.");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Invalid email or password.");
     } finally {
       setSubmitting(false);
     }
@@ -77,6 +78,9 @@ export default function LoginPage() {
             {submitting ? "Signing in…" : "Sign in"}
           </Button>
         </form>
+        <Link component={RouterLink} to="/register" underline="hover" sx={{ display: "block", mt: 2, textAlign: "center" }}>
+          Request access
+        </Link>
       </Paper>
     </Box>
   );

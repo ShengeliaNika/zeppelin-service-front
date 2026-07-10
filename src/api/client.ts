@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5080";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
 
 export class ApiError extends Error {
   constructor(
@@ -67,7 +67,7 @@ function sendRequest(path: string, init?: RequestInit): Promise<Response> {
 
 async function parseResponse<T>(path: string, response: Response): Promise<T> {
   if (!response.ok) {
-    throw new ApiError(response.status, `Request to ${path} failed with status ${response.status}`);
+    throw new ApiError(response.status, await extractErrorMessage(path, response));
   }
 
   if (response.status === 204) {
@@ -75,6 +75,27 @@ async function parseResponse<T>(path: string, response: Response): Promise<T> {
   }
 
   return (await response.json()) as T;
+}
+
+// Auth failures return { message }; ASP.NET's ValidationProblem(string) returns a
+// ProblemDetails with the message in `detail` (and sometimes a `title`/`errors` map
+// for real ModelState failures) - surface whichever is present instead of a generic
+// "failed with status" string.
+async function extractErrorMessage(path: string, response: Response): Promise<string> {
+  const fallback = `Request to ${path} failed with status ${response.status}`;
+  try {
+    const body = await response.json();
+    if (typeof body?.message === "string") return body.message;
+    if (typeof body?.detail === "string") return body.detail;
+    if (body?.errors) {
+      const details = Object.values(body.errors as Record<string, string[]>).flat();
+      if (details.length > 0) return details.join(" ");
+    }
+    if (typeof body?.title === "string") return body.title;
+    return fallback;
+  } catch {
+    return fallback;
+  }
 }
 
 // For authenticated binary downloads (e.g. attachments) where a plain <a

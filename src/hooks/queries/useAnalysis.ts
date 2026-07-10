@@ -18,9 +18,10 @@ export function usePatientGrowth(from: string, to: string) {
   });
 }
 
-export function useRevenueTrend(months = 6) {
+export function useRevenueTrend(months = 6, enabled = true) {
   return useQuery({
     queryKey: ["analysis-revenue-trend", months],
     queryFn: () => apiFetch<RevenueTrend>(`/api/analysis/revenue-trend?months=${months}`),
+    enabled,
   });
 }

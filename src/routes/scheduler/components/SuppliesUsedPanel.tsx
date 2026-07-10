@@ -3,7 +3,7 @@ import { Autocomplete, Box, Button, Chip, IconButton, List, ListItem, MenuItem, 
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
 import type { InventoryItem } from "../../../api/types";
 import { useAppointmentSupplyUsage, useInventoryItems } from "../../../hooks/queries/useInventory";
-import { useLogSuppliesUsed, type SupplyUsageLine } from "../../../hooks/mutations/useInventoryMutations";
+import { useDeleteSupplyUsage, useLogSuppliesUsed, type SupplyUsageLine } from "../../../hooks/mutations/useInventoryMutations";
 
 interface DraftLine {
   item: InventoryItem;
@@ -16,10 +16,12 @@ export default function SuppliesUsedPanel({ appointmentId, appointmentTypeId }: 
   const [search, setSearch] = useState("");
   const { data: items } = useInventoryItems(0, 25, "", search);
   const logSupplies = useLogSuppliesUsed(appointmentId, appointmentTypeId);
+  const deleteSupply = useDeleteSupplyUsage(appointmentId);
 
   const [draft, setDraft] = useState<DraftLine[]>([]);
 
   function addItem(item: InventoryItem | null) {
+    setSearch("");
     if (!item || draft.some((d) => d.item.id === item.id)) return;
     setDraft((prev) => [...prev, { item, quantity: "1", type: "UsageDeduction" }]);
   }
@@ -60,6 +62,15 @@ export default function SuppliesUsedPanel({ appointmentId, appointmentTypeId }: 
               <Typography variant="caption" color="text.secondary" sx={{ ml: "auto" }}>
                 {u.recordedByName}
               </Typography>
+              <IconButton
+                size="small"
+                onClick={() => deleteSupply.mutate({ itemId: u.inventoryItemId, movementId: u.id })}
+                disabled={deleteSupply.isPending}
+                aria-label="Undo this entry"
+                title="Undo - restores the stock it deducted"
+              >
+                <DeleteOutlineIcon fontSize="small" />
+              </IconButton>
             </ListItem>
           ))}
         </List>
@@ -104,11 +115,19 @@ export default function SuppliesUsedPanel({ appointmentId, appointmentTypeId }: 
       <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexWrap: "wrap" }}>
         <Autocomplete
           size="small"
-          options={items?.items ?? []}
+          options={(items?.items ?? []).filter((i) => !draft.some((d) => d.item.id === i.id))}
           getOptionLabel={(i) => i.name}
           value={null}
+          // Fully controlled inputValue + explicit reset on select: without this,
+          // Autocomplete's internal text state drifts from `search` after picking
+          // an item (value stays null so it never syncs the input to the
+          // selection), leaving the just-picked item's name sitting in the box
+          // and its dropdown popping back open on the next keystroke.
+          inputValue={search}
           onChange={(_, value) => addItem(value)}
-          onInputChange={(_, value) => setSearch(value)}
+          onInputChange={(_, value, reason) => {
+            if (reason === "input") setSearch(value);
+          }}
           renderInput={(params) => <TextField {...params} placeholder="Add a supply used…" />}
           sx={{ minWidth: 220 }}
         />

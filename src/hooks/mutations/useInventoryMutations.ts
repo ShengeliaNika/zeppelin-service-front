@@ -91,6 +91,28 @@ export function useLogSuppliesUsed(appointmentId: string, appointmentTypeId: str
       queryClient.invalidateQueries({ queryKey: ["inventory-alerts"] });
       queryClient.invalidateQueries({ queryKey: ["inventory-summary"] });
       queryClient.invalidateQueries({ queryKey: ["appointment-supply-usage", appointmentId] });
+      // Broad match (no exact queryKey) so the "My Patients" list's Pending/Logged
+      // badge (which reads Appointment.hasLoggedSupplies) refreshes too.
+      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+    },
+  });
+}
+
+// Undoes a mistaken "supplies used" line - restores the stock it deducted
+// rather than just deleting the row (see the backend's ReverseUsageMovementAsync).
+// Correction flow is delete-then-re-add via the existing add form, not in-place edit.
+export function useDeleteSupplyUsage(appointmentId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ itemId, movementId }: { itemId: string; movementId: string }) =>
+      apiFetch<void>(`/api/inventory-items/${itemId}/stock-movements/${movementId}`, { method: "DELETE" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["inventory-items"] });
+      queryClient.invalidateQueries({ queryKey: ["inventory-alerts"] });
+      queryClient.invalidateQueries({ queryKey: ["inventory-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["appointment-supply-usage", appointmentId] });
+      queryClient.invalidateQueries({ queryKey: ["appointments"] });
     },
   });
 }

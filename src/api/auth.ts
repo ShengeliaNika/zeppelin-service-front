@@ -1,10 +1,18 @@
 import { apiFetch } from "./client";
-import type { AuthResponse } from "./types";
+import type { AuthResponse, RegisterRequest, RegisterResponse } from "./types";
 
 export function login(email: string, password: string) {
   return apiFetch<AuthResponse>("/api/auth/login", {
     method: "POST",
     body: JSON.stringify({ email, password }),
+    skipAuthRetry: true,
+  });
+}
+
+export function register(request: RegisterRequest) {
+  return apiFetch<RegisterResponse>("/api/auth/register", {
+    method: "POST",
+    body: JSON.stringify(request),
     skipAuthRetry: true,
   });
 }

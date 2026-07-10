@@ -24,7 +24,7 @@ import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import PeopleOutlinedIcon from "@mui/icons-material/PeopleOutlined";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
-import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
+import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined";
 import InsightsOutlinedIcon from "@mui/icons-material/InsightsOutlined";
 import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
@@ -125,6 +125,7 @@ function NavContent({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?
   };
 
   const isAdmin = user?.roles.includes(Roles.Admin);
+  const isClinicalStaff = user?.roles.some((r) => [Roles.Admin, Roles.Dentist, Roles.Hygienist].includes(r));
 
   return (
     <List sx={{ px: 1 }}>
@@ -132,7 +133,9 @@ function NavContent({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?
       <NL to="/scheduler" sx={navItemSx} icon={<CalendarMonthOutlinedIcon />} label="Scheduler" />
       <NL to="/patients" sx={navItemSx} icon={<PeopleOutlinedIcon />} label="Patients" />
       <NL to="/inventory" sx={navItemSx} icon={<Inventory2OutlinedIcon />} label="Inventory" />
-      <NL to="/team" sx={navItemSx} icon={<GroupsOutlinedIcon />} label="Team" />
+      {isClinicalStaff && (
+        <NL to="/my-patients" sx={navItemSx} icon={<AssignmentTurnedInOutlinedIcon />} label="My Patients" />
+      )}
       <NL to="/analysis" sx={navItemSx} icon={<InsightsOutlinedIcon />} label="Analysis" />
 
       {isAdmin &&

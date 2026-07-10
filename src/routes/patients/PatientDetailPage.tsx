@@ -85,7 +85,7 @@ export default function PatientDetailPage() {
       ) : (
         <Box sx={{ display: "flex", gap: 3, alignItems: "flex-start", flexWrap: { xs: "wrap", lg: "nowrap" } }}>
           {/* Sidebar */}
-          <Box sx={{ width: 280, flexShrink: 0 }}>
+          <Box sx={{ width: { xs: "100%", lg: 280 }, flexShrink: 0 }}>
             <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5, mb: 1 }}>
               <UserAvatar firstName={patient.firstName} lastName={patient.lastName} size={64} />
               <IconButton size="small" onClick={() => setShowEditDemographics(true)} sx={{ ml: "auto" }} aria-label="Edit demographics">
@@ -170,7 +170,7 @@ export default function PatientDetailPage() {
           </Box>
 
           {/* Middle column: Visits / Plans */}
-          <Box sx={{ width: 340, flexShrink: 0 }}>
+          <Box sx={{ width: { xs: "100%", lg: 340 }, flexShrink: 0 }}>
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
               <Tabs value={middleTab} onChange={(_: SyntheticEvent, v: MiddleTab) => setMiddleTab(v)}>
                 <Tab label="Visits" value="visits" />

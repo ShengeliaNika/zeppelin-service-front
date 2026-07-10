@@ -10,25 +10,12 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import type { Appointment, AppointmentStatus } from "../../../api/types";
+import type { Appointment } from "../../../api/types";
 import { useUpdateAppointmentStatus } from "../../../hooks/mutations/useAppointmentMutations";
 import { StatusChip } from "../../../components/StatusChip";
+import { formatDate, formatTime, NEXT_STATUS } from "../utils/appointmentFormat";
 import VisitNotesPanel from "./VisitNotesPanel";
 import SuppliesUsedPanel from "./SuppliesUsedPanel";
-
-function formatTime(iso: string) {
-  return new Date(iso).toLocaleTimeString([], { hour: "numeric", minute: "2-digit", timeZone: "UTC" });
-}
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", timeZone: "UTC" });
-}
-
-const NEXT_STATUS: Partial<Record<AppointmentStatus, AppointmentStatus>> = {
-  Scheduled: "Confirmed",
-  Confirmed: "CheckedIn",
-  CheckedIn: "Completed",
-};
 
 interface Props {
   appointment: Appointment;

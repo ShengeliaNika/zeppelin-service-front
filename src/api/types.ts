@@ -20,6 +20,8 @@ export interface AuthResponse {
   user: UserSummary;
 }
 
+export type UserApprovalStatus = "Pending" | "Approved" | "Declined";
+
 export interface StaffUser {
   id: string;
   email: string;
@@ -28,6 +30,8 @@ export interface StaffUser {
   staffTitle: string | null;
   isActive: boolean;
   roles: string[];
+  approvalStatus: UserApprovalStatus;
+  approvalDecidedAtUtc: string | null;
 }
 
 export interface CreateStaffUserRequest {
@@ -36,6 +40,21 @@ export interface CreateStaffUserRequest {
   firstName: string;
   lastName: string;
   staffTitle?: string;
+  roles: string[];
+}
+
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+}
+
+export interface RegisterResponse {
+  message: string;
+}
+
+export interface ApproveUserRequest {
   roles: string[];
 }
 
@@ -155,6 +174,7 @@ export interface Appointment {
   status: AppointmentStatus;
   notes: string | null;
   cancelledReason: string | null;
+  hasLoggedSupplies: boolean;
 }
 
 export interface CreateAppointmentRequest {
@@ -484,29 +504,6 @@ export interface AuditLogEntry {
   timestampUtc: string;
 }
 
-export type TeamTaskStatus = "Open" | "InProgress" | "Done" | "Cancelled";
-
-export interface TeamTask {
-  id: string;
-  title: string;
-  description: string | null;
-  assignedToUserId: string;
-  assignedToName: string;
-  assignedByUserId: string;
-  assignedByName: string;
-  status: TeamTaskStatus;
-  dueDate: string | null;
-  createdAtUtc: string;
-  completedAtUtc: string | null;
-}
-
-export interface CreateTeamTaskRequest {
-  title: string;
-  description?: string;
-  assignedToUserId: string;
-  dueDate?: string;
-}
-
 export interface DailyAppointmentStats {
   date: string;
   scheduled: number;
@@ -591,6 +588,14 @@ export interface MonthlyCostPoint {
   estimatedCost: number;
 }
 
+export interface DoctorUsage {
+  dentistUserId: string;
+  dentistName: string;
+  usageQuantity: number;
+  wasteQuantity: number;
+  estimatedCost: number;
+}
+
 export interface UsageCostReport {
   from: string;
   to: string;
@@ -600,4 +605,5 @@ export interface UsageCostReport {
   topUsedItems: ItemUsage[];
   wasteStats: WasteStat[];
   costOverTime: MonthlyCostPoint[];
+  usageByDoctor: DoctorUsage[];
 }

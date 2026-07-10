@@ -133,7 +133,7 @@ export default function InventoryListPage() {
         value={search}
         onChange={(e) => handleSearchChange(e.target.value)}
         size="small"
-        sx={{ mb: 2, width: 320 }}
+        sx={{ mb: 2, width: { xs: "100%", sm: 320 } }}
       />
 
       <QueryState isLoading={isLoading} error={error}>

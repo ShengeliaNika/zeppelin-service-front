@@ -16,7 +16,7 @@ const PAGES: SearchPage[] = [
   { path: "/scheduler", label: "Scheduler" },
   { path: "/patients", label: "Patients" },
   { path: "/inventory", label: "Inventory" },
-  { path: "/team", label: "Team" },
+  { path: "/my-patients", label: "My Patients" },
   { path: "/analysis", label: "Analysis" },
   { path: "/admin/users", label: "Staff", adminOnly: true },
   { path: "/admin/audit-log", label: "Audit Log", adminOnly: true },

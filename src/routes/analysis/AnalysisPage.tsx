@@ -19,6 +19,8 @@ import { useUsageCostReport } from "../../hooks/queries/useInventoryReports";
 import { QueryState } from "../../components/QueryState";
 import StatTile from "../../components/StatTile";
 import { formatCurrency } from "../../utils/currency";
+import { useAuth } from "../../auth/AuthContext";
+import { Roles } from "../../auth/roles";
 import AppointmentsStatusChart from "./components/charts/AppointmentsStatusChart";
 import SingleLineChart from "./components/charts/SingleLineChart";
 import UsageByCategoryChart from "./components/charts/UsageByCategoryChart";
@@ -30,13 +32,16 @@ function isoDate(date: Date) {
 }
 
 export default function AnalysisPage() {
+  const { user } = useAuth();
+  const canViewFinancials = !!user?.roles.includes(Roles.Admin);
+
   const [from, setFrom] = useState(() => isoDate(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)));
   const [to, setTo] = useState(() => isoDate(new Date()));
 
   const { data: appointmentsTrend, isLoading: apptLoading, error: apptError } = useAppointmentsTrend(from, to);
   const { data: patientGrowth, isLoading: growthLoading } = usePatientGrowth(from, to);
-  const { data: revenueTrend } = useRevenueTrend(6);
-  const { data: usageCost, isLoading: usageLoading } = useUsageCostReport(from, to);
+  const { data: revenueTrend } = useRevenueTrend(6, canViewFinancials);
+  const { data: usageCost, isLoading: usageLoading } = useUsageCostReport(from, to, undefined, canViewFinancials);
 
   return (
     <Box>
@@ -115,70 +120,105 @@ export default function AnalysisPage() {
         </>
       )}
 
-      {/* Revenue Trend */}
-      <Typography variant="h6" sx={{ mb: 1 }}>
-        Estimated Revenue Trend (last 6 months)
-      </Typography>
-      {revenueTrend && (
-        <Card sx={{ mb: 3 }}>
-          <CardContent>
-            <SingleLineChart
-              data={revenueTrend.monthly.map((m) => ({ label: `${MONTH_LABELS[m.month - 1]} ${m.year}`, value: m.estimatedRevenue }))}
-              valueLabel="Estimated revenue"
-              formatValue={(v) => formatCurrency(v)}
-            />
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Inventory Usage & Cost */}
-      <Typography variant="h6" sx={{ mb: 1 }}>
-        Inventory Usage &amp; Cost
-      </Typography>
-      {usageLoading && <Typography>Loading…</Typography>}
-      {usageCost && usageCost.categoryUsage.length === 0 && (
-        <Typography color="text.secondary">Not enough movement history yet to show usage trends.</Typography>
-      )}
-      {usageCost && usageCost.categoryUsage.length > 0 && (
+      {/* Revenue Trend and Inventory Usage & Cost show cost/budget data - Admin only */}
+      {canViewFinancials && (
         <>
-          <Grid container spacing={2} sx={{ mb: 2 }}>
-            <Grid item xs={6} sm={3}>
-              <StatTile label="Usage cost" value={formatCurrency(usageCost.totalUsageCost)} />
-            </Grid>
-            <Grid item xs={6} sm={3}>
-              <StatTile label="Waste cost" value={formatCurrency(usageCost.totalWasteCost)} status={usageCost.totalWasteCost > 0 ? "warning" : "success"} />
-            </Grid>
-          </Grid>
-          <Card sx={{ mb: 3 }}>
-            <CardContent>
-              <UsageByCategoryChart data={usageCost.categoryUsage} />
-            </CardContent>
-          </Card>
+          <Typography variant="h6" sx={{ mb: 1 }}>
+            Estimated Revenue Trend (last 6 months)
+          </Typography>
+          {revenueTrend && (
+            <Card sx={{ mb: 3 }}>
+              <CardContent>
+                <SingleLineChart
+                  data={revenueTrend.monthly.map((m) => ({ label: `${MONTH_LABELS[m.month - 1]} ${m.year}`, value: m.estimatedRevenue }))}
+                  valueLabel="Estimated revenue"
+                  formatValue={(v) => formatCurrency(v)}
+                />
+              </CardContent>
+            </Card>
+          )}
 
-          {usageCost.topUsedItems.length > 0 && (
-            <Paper variant="outlined" sx={{ mb: 3 }}>
-              <Typography sx={{ fontWeight: 600, px: 2, pt: 1.5, pb: 1 }}>Most used items</Typography>
-              <TableContainer>
-                <Table size="small">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Item</TableCell>
-                      <TableCell align="right">Quantity used</TableCell>
-                      <TableCell align="right">Estimated cost</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {usageCost.topUsedItems.map((i) => (
-                      <TableRow key={i.inventoryItemId} hover>
-                        <TableCell>{i.inventoryItemName}</TableCell>
-                        <TableCell align="right">{i.usageQuantity}</TableCell>
-                        <TableCell align="right">{formatCurrency(i.estimatedCost)}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Paper>
+          <Typography variant="h6" sx={{ mb: 1 }}>
+            Inventory Usage &amp; Cost
+          </Typography>
+          {usageLoading && <Typography>Loading…</Typography>}
+          {usageCost && usageCost.categoryUsage.length === 0 && (
+            <Typography color="text.secondary">Not enough movement history yet to show usage trends.</Typography>
+          )}
+          {usageCost && usageCost.categoryUsage.length > 0 && (
+            <>
+              <Grid container spacing={2} sx={{ mb: 2 }}>
+                <Grid item xs={6} sm={3}>
+                  <StatTile label="Usage cost" value={formatCurrency(usageCost.totalUsageCost)} />
+                </Grid>
+                <Grid item xs={6} sm={3}>
+                  <StatTile
+                    label="Waste cost"
+                    value={formatCurrency(usageCost.totalWasteCost)}
+                    status={usageCost.totalWasteCost > 0 ? "warning" : "success"}
+                  />
+                </Grid>
+              </Grid>
+              <Card sx={{ mb: 3 }}>
+                <CardContent>
+                  <UsageByCategoryChart data={usageCost.categoryUsage} />
+                </CardContent>
+              </Card>
+
+              {usageCost.topUsedItems.length > 0 && (
+                <Paper variant="outlined" sx={{ mb: 3 }}>
+                  <Typography sx={{ fontWeight: 600, px: 2, pt: 1.5, pb: 1 }}>Most used items</Typography>
+                  <TableContainer>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Item</TableCell>
+                          <TableCell align="right">Quantity used</TableCell>
+                          <TableCell align="right">Estimated cost</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {usageCost.topUsedItems.map((i) => (
+                          <TableRow key={i.inventoryItemId} hover>
+                            <TableCell>{i.inventoryItemName}</TableCell>
+                            <TableCell align="right">{i.usageQuantity}</TableCell>
+                            <TableCell align="right">{formatCurrency(i.estimatedCost)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Paper>
+              )}
+
+              {usageCost.usageByDoctor.length > 0 && (
+                <Paper variant="outlined" sx={{ mb: 3 }}>
+                  <Typography sx={{ fontWeight: 600, px: 2, pt: 1.5, pb: 1 }}>Usage by doctor</Typography>
+                  <TableContainer>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Doctor</TableCell>
+                          <TableCell align="right">Quantity used</TableCell>
+                          <TableCell align="right">Wasted</TableCell>
+                          <TableCell align="right">Estimated cost</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {usageCost.usageByDoctor.map((d) => (
+                          <TableRow key={d.dentistUserId} hover>
+                            <TableCell>{d.dentistName}</TableCell>
+                            <TableCell align="right">{d.usageQuantity}</TableCell>
+                            <TableCell align="right">{d.wasteQuantity}</TableCell>
+                            <TableCell align="right">{formatCurrency(d.estimatedCost)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Paper>
+              )}
+            </>
           )}
         </>
       )}

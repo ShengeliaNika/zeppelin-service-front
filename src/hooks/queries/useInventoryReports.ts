@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "../../api/client";
 import type { InventoryCategory, UsageCostReport } from "../../api/types";
 
-export function useUsageCostReport(from: string, to: string, category?: InventoryCategory | "") {
+export function useUsageCostReport(from: string, to: string, category?: InventoryCategory | "", enabled = true) {
   return useQuery({
     queryKey: ["usage-cost-report", from, to, category],
     queryFn: () => {
@@ -10,6 +10,6 @@ export function useUsageCostReport(from: string, to: string, category?: Inventor
       if (category) params.set("category", category);
       return apiFetch<UsageCostReport>(`/api/inventory-reports/usage-cost?${params.toString()}`);
     },
-    enabled: !!from && !!to,
+    enabled: enabled && !!from && !!to,
   });
 }
